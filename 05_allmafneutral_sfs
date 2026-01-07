@@ -1,0 +1,17 @@
+#!/bin/bash
+#PBS -N 05_allmafneutral_sfs
+#PBS -l select=1:ncpus=16:mem=16GB
+#PBS -l walltime=24:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+cd $PBS_O_WORKDIR
+
+#module load 
+module load app/angsd/0.940
+
+realSFS \
+~/ch2/05_stairway/allmafneutral_SFS.saf.idx \
+-P 16 \
+-anc ~/msc/05_refmap/genome_updated/GCA_040869175.1_updated.fasta \
+> ~/ch2/05_stairway/05_allmafneutral_sfs.sfs

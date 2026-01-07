@@ -1,0 +1,119 @@
+qsubi 
+module load app/R/4.3.2
+R
+
+#Define basedir
+basedir <- "~/ch2/03_angsd/" 
+setwd(basedir)
+
+# Load libraries
+library(ragg)
+
+# -------------------------------
+# Input
+# -------------------------------
+counts <- read.table(
+  gzfile("~/ch2/03_angsd/03.63_angsd_GL.counts.gz"),
+  header = TRUE,
+  colClasses = "numeric"
+)
+
+#for maf 0.01 I had used 03.53_angsd_GL
+
+# -------------------------------
+# Depth calculations
+# -------------------------------
+
+# Median depth per site (row-wise)
+median_per_site <- apply(counts, 1, median)
+
+summary(median_per_site)
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#   1.00    2.00    4.00   10.87   11.00 2358.00 
+
+# Median depth per individual (column-wise)
+median_per_ind <- apply(counts, 2, median)
+
+summary(median_per_ind)
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#  2.000   4.000   5.000   4.774   5.000   8.000 
+
+# Flatten all depths into one long vector
+all_depths <- as.numeric(as.matrix(counts))
+
+summary(all_depths)
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#    0.0     2.0     5.0    11.5    12.0  5058.0 
+
+# Global median depth
+global_median <- median(median_per_ind, na.rm = TRUE)
+
+global_median 
+#5
+
+# Suggested geno_maxDepth thresholds
+geno_maxDepth_4x   <- global_median * 4
+geno_maxDepth_4x
+#20 
+
+# Print summaries to log (not needed now b/w in qsubi)
+#cat("Global median depth:", global_median, "\n")
+#cat("geno_maxDepth (2.5x):", geno_maxDepth_4x, "\n")
+
+#cat("Summary of median_per_site:\n")
+#print(summary(median_per_site))
+#cat("\nSummary of median_per_ind:\n")
+#print(summary(median_per_ind))
+
+
+# -------------------------------
+# Histogram 1: Full depth distribution 
+# NB this was was skewed, so reran truncated histogram below 
+# -------------------------------
+agg_png("~/ch2/03_angsd/03.63_all_depths_hist_full.png",
+        width = 10, height = 8, units = "in", res = 300)
+
+hist(all_depths,
+     breaks = 200,
+     main = "Distribution of Per-Site Per-Individual Depths (Full)",
+     xlab = "Depth",
+     ylab = "Frequency",
+     col = "lightblue",
+     border = "black")
+
+abline(v = global_median, col = "red", lwd = 2, lty = 2)
+abline(v = geno_maxDepth_4x, col = "blue", lwd = 2, lty = 2)
+
+legend("topright",
+       legend = c("Global median", "4x median"),
+       col = c("red", "blue"),
+       lwd = 2, lty = 2)
+
+dev.off()
+# very small/skewed - replot trunctated 
+
+# -------------------------------
+# Histogram 2: Truncated at depth ≤ 100
+# -------------------------------
+agg_png("~/ch2/03_angsd/03.63_all_depths_hist_trunc100.png",
+        width = 10, height = 8, units = "in", res = 300)
+
+hist(all_depths[all_depths <= 100],
+     breaks = seq(0, 100, by = 2), #by = 1 was generating alternating tall/short histogram boxes 
+     main = "Distribution of Per-Site Per-Individual Depths (≤ 100)",
+     xlab = "Depth",
+     ylab = "Frequency",
+     col = "lightblue",
+     border = "black")
+
+abline(v = global_median, col = "red", lwd = 2, lty = 2)
+abline(v = geno_maxDepth_4x, col = "blue", lwd = 2, lty = 2)
+
+legend("topright",
+       legend = c("Global median", "4x median"),
+       col = c("red", "blue"),
+       lwd = 2, lty = 2)
+
+dev.off()
+
+#Based on assesment of plot, I think median x 4 = 20 is still fine (not extreme tail, not highly inflated). 

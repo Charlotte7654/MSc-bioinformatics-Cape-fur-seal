@@ -1,0 +1,26 @@
+#!/bin/bash
+#PBS -N 05_allmafneutral_SFS
+#PBS -l select=1:ncpus=8:mem=30GB
+#PBS -l walltime=48:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+#PBS -o ~/ch2/00_scripts/05_allmafneutral_SFS.o%j
+#PBS -e ~/ch2/00_scripts/05_allmafneutral_SFS.e%j
+
+cd $PBS_O_WORKDIR
+
+# Load ANGSD module
+module load app/angsd/0.940
+
+#Neutral SA
+angsd \
+-bam ~/ch2/00_info/bamlist_91_renamed \
+-anc ~/msc/05_refmap/genome_updated/GCA_040869175.1_updated.fasta \
+-out ~/ch2/05_stairway/allmafneutral_SFS \
+-GL 1 \
+-doSaf 1 \
+-minMapQ 20 \
+-minQ 20 \
+-remove_bads 1 \
+-sites ~/ch2/05_stairway/neutral_and_monomorphic_sites.txt \
+-nThreads 8

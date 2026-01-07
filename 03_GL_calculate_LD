@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -N 03_GL_calculate_LD
+#PBS -l select=1:ncpus=16:mem=16GB
+#PBS -l walltime=744:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+mkdir -p ~/ch2/03_angsd/
+
+cd ~/software/ngsLD
+
+./ngsLD \
+--geno ~/ch2/03_angsd/03.65_angsd_GL_renamed.beagle.gz \
+--pos ~/ch2/03_angsd/03.65_angsd_GL_LDposinput.txt \
+--n_ind 91 \
+--n_sites 264574 \
+--out ~/ch2/03_angsd/03.65_angsd_GL_LDsites \
+--extend_out \
+--verbose 1 \
+--max_kb_dist 100 \
+--n_threads 16

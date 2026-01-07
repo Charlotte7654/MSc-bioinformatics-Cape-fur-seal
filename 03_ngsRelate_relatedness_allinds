@@ -1,0 +1,17 @@
+#!/bin/bash
+#PBS -N 03_ngsRelate_relatedness_allinds
+#PBS -l select=1:ncpus=8:mem=8GB
+#PBS -l walltime=168:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+module load app/ngsRelate/current 
+
+# -n <INT> Number of samples in glf.gz
+ngsRelate \
+-G ~/ch2/03_angsd/03.63_angsd_GL_renamed.beagle.gz \
+-n 93 \
+-f ~/ch2/03_angsd/03.63_angsd_GL_freq \
+-O ~/ch2/03_angsd/03.63_angsd_GL_relatedness_newres
+
+

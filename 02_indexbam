@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -N 02_indexbam
+#PBS -l select=1:ncpus=16:mem=8GB
+#PBS -l walltime=23:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+module load app/samtools/1.19.2
+
+# Folder containing BAM files
+bamdir=~/ch2/02_align
+
+# Loop through all BAMs in the folder
+for bam in "$bamdir"/*.bam; do
+    if [ ! -f "${bam}.bai" ]; then
+        echo "Indexing $bam ..."
+        samtools index "$bam"
+    else
+        echo "Index already exists for $bam"
+    fi
+done

@@ -1,0 +1,20 @@
+qsubi 
+mkdir -p ~/ch2/04_outlierdetection/
+
+module load app/pcangsd/1.10 
+
+pcangsd \
+-b ~/ch2/03_angsd/03.65_angsd_GL_renamed_LDpruned.beagle.gz \
+-o ~/ch2/04_outlierdetection/03.65_angsd_GL_renamed_pcangsdoutlierdetection \
+--pcadapt --sites_save -t 4 --minMaf 0.05
+
+wc -l ~/ch2/04_outlierdetection/03.65_angsd_GL_renamed_pcangsdoutlierdetection.sites
+#264574
+
+#checked how many sites were assigned pvals, and it was all of them: 
+awk '{if($1==1) ones++; else if($1==0) zeros++} END{print "1s:", ones, "0s:", zeros}' \
+~/ch2/04_outlierdetection/03.65_angsd_GL_renamed_pcangsdoutlierdetection.sites
+#1s: 264574 0s: 
+#great, pvalues were assigned for all sites (1 = assigned, 0 = not assigned, in which case maybe does not meat maf). 
+
+

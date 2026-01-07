@@ -1,0 +1,61 @@
+#!/bin/bash
+#PBS -N 04_fst_bootstrap_PP_LB
+#PBS -l select=1:ncpus=4:mem=4GB
+#PBS -l walltime=24:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+set -euo pipefail
+
+cd $PBS_O_WORKDIR
+
+module load app/angsd/0.940
+
+BASE=/home/25405942/ch2/03_angsd
+SAF_DIR=$BASE/sfs
+OUT_DIR=$BASE/fst_bootstrap
+
+mkdir -p $OUT_DIR
+
+# ---- population pair ----
+P1=PP
+P2=LB
+
+POP1=$SAF_DIR/03_angsd_saf_${P1}_02.saf.idx
+POP2=$SAF_DIR/03_angsd_saf_${P2}_02.saf.idx
+BOOT_FILE=$SAF_DIR/${P1}_${P2}_02_boot.ml
+
+echo "Starting FST bootstraps for ${P1} vs ${P2}"
+echo "Bootstrap file: $BOOT_FILE"
+
+n=0
+while read -r line; do
+  n=$((n+1))
+
+  SFS_TMP=$OUT_DIR/${P1}_${P2}_boot_${n}.ml
+  FST_OUT=$OUT_DIR/${P1}_${P2}_boot_${n}
+
+  if [ -s ${FST_OUT}.fst.stats ]; then
+    echo "Skipping bootstrap $n (already complete)"
+    continue
+  fi
+
+  echo "Running bootstrap $n"
+
+  echo "$line" > $SFS_TMP
+
+  /apps/angsd/0.940/angsd/misc/realSFS fst index \
+    $POP1 $POP2 \
+    -sfs $SFS_TMP \
+    -fold 1 \
+    -fstout $FST_OUT \
+    -cores 16
+
+  /apps/angsd/0.940/angsd/misc/realSFS fst stats \
+    ${FST_OUT}.fst.idx \
+    > ${FST_OUT}.fst.stats
+
+done < $BOOT_FILE
+
+echo "Finished ${P1} vs ${P2}"
+

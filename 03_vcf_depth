@@ -1,0 +1,25 @@
+
+qsubi
+cd ~/ch2/03_angsd/HG
+module load app/bcftools/1.19
+
+vcf_file=~/ch2/03_angsd/HG/03_angsd_HG_03.65_ldfiltered.vcf
+
+# Step 1: calculate per-site mean depth per called sample
+# Stream directly to sort
+bcftools query -f '%CHROM\t%POS\t%NS\t%DP\n' $vcf_file | \
+awk '{if($3>0) print $4/$3; else print 0}' | \
+sort -n > dp_per_sample_sorted.txt
+
+# Step 2: calculate mean including zeros
+awk '{sum+=$1; count++} END {print "Mean (including zeros):", sum/count}' dp_per_sample_sorted.txt
+#Mean (including zeros): 12.5525 
+
+# Step 3: calculate selected percentiles (streaming, no large array)
+n=$(wc -l < dp_per_sample_sorted.txt)
+awk -v n=$n '
+NR==int(n*0.05)+1 {print "5th percentile:", $1}
+NR==int(n*0.25)+1 {print "25th percentile:", $1}
+NR==int(n*0.5)+1 {print "Median:", $1}
+NR==int(n*0.75)+1 {print "75th percentile:", $1}
+NR==int(n*0.95)+1 {print "95th percentile:", $1}' dp_per_sample_sorted.txt

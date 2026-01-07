@@ -1,0 +1,16 @@
+#!/bin/bash
+#PBS -N 04_print_fst_02
+#PBS -l select=1:ncpus=8:mem=8GB
+#PBS -l walltime=4:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+# Load ANGSD module
+module load app/angsd/0.940
+
+# CC vs LB 
+realSFS fst print ~/ch2/03_angsd/fst/CC_LB_02.fst.idx > ~/ch2/03_angsd/fst/CC_LB_02_perSite.fst.txt
+
+# CC vs KL 
+realSFS fst print ~/ch2/03_angsd/fst/CC_KL_02.fst.idx > ~/ch2/03_angsd/fst/CC_KL_02_perSite.fst.txt
+

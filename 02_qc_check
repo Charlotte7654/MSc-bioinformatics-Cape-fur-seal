@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -N 02_qc_check
+#PBS -l select=1:ncpus=8:mem=30GB
+#PBS -l walltime=12:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+cd $PBS_O_WORKDIR
+
+module load app/samtools/1.19
+module load app/multiqc/1.14
+
+mkdir -p ~/ch2/02_bam_qc
+mkdir -p ~/ch2/02_multiqc_align
+
+for bam in ~/ch2/02_align/*.bam
+do
+    sample=$(basename "$bam" .bam)
+    samtools flagstat "$bam" > ~/ch2/02_bam_qc/${sample}.flagstat.txt
+    samtools coverage "$bam" > ~/ch2/02_bam_qc/${sample}.coverage.txt
+done
+
+multiqc ~/ch2/02_bam_qc -o ~/ch2/02_multiqc_align

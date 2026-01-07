@@ -1,0 +1,57 @@
+qsubi 
+module load app/R/4.3.2
+R
+
+library(dplyr)
+
+files <- list.files("~/ch2/02_bam_qc", pattern="*.coverage.txt", full.names=TRUE)
+
+depth_summary <- lapply(files, function(f) {
+  # read file skipping commented lines
+  df <- read.table(f, header=TRUE, comment.char="", stringsAsFactors=FALSE)
+  
+  # Remove any '#' from the column names
+  names(df) <- gsub("^#", "", names(df))
+  
+  # convert to numeric
+  df$meandepth <- as.numeric(df$meandepth)
+  df$coverage <- as.numeric(df$coverage)
+  
+  data.frame(
+    sample = basename(f),
+    mean_meandepth = mean(df$meandepth, na.rm=TRUE),
+    median_meandepth = median(df$meandepth, na.rm=TRUE),
+    prop_covered = mean(df$coverage, na.rm=TRUE)
+  )
+}) |> bind_rows()
+
+depth_summary
+
+# flag individuals with mean depth < 0.1 or prop_covered < 2%
+bad_samples <- depth_summary %>%
+  filter(mean_meandepth < 0.1 | prop_covered < 2)
+
+bad_samples
+
+                 sample mean_meandepth median_meandepth prop_covered
+1 384C_F11.coverage.txt     0.12460746      0.079040800    1.9179977
+2 384C_H01.coverage.txt     0.03865086      0.002160010    0.1988872
+3 384C_H04.coverage.txt     0.01035084      0.000154078    0.1131717
+4 384C_H09.coverage.txt     0.02424612      0.007505400    0.4861562
+
+#already removed H01, H09 and H04... F11 is a blank 
+
+#Also saved in laptop files 
+library(ggplot2)
+
+# Save to PDF
+pdf("~/ch2/02_bam_qc/mean_depth_plot.pdf", width = 8, height = 10)
+
+ggplot(depth_summary, aes(x = reorder(sample, mean_meandepth), y = mean_meandepth)) +
+  geom_col() +
+  coord_flip() +
+  geom_hline(yintercept = 0.1, linetype = "dashed", color = "red") +
+  labs(y = "Mean depth", x = "Sample") +
+  theme_minimal()
+
+dev.off()

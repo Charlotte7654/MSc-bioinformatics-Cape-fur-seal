@@ -1,0 +1,76 @@
+qsubi 
+module load app/vcftools/0.1.14-4491144
+
+# vcf tools now can't handle vesion 4.3 of a vcf after convertion from PLINK, but I have manually edited file in past 
+# I think there is more than one place (not just first line) where version is stated, so use sed 
+sed 's/^##fileformat=VCFv4.3/##fileformat=VCFv4.2/' \
+~/ch2/03_angsd/HG/03_angsd_HG_03.65_ldfiltered.vcf \
+> ~/ch2/03_angsd/HG/03_angsd_HG_03.65_ldfiltered_versionedit.vcf
+
+#run missingness 
+#I think vcftools doesn't use output file paths, so move into ideal output directory or move the output file 
+
+cd ~/ch2/03_angsd/HG/
+
+vcftools \
+> --vcf ~/ch2/03_angsd/HG/03_angsd_HG_03.65_ldfiltered_versionedit.vcf \
+> --missing-indv 
+
+#renamed outputs 
+mv out.imiss missingness_vcftools.imiss
+mv out.log missingness_vcftools.log
+
+#list samples above thresholds 
+awk '$5 > 0.4' missingness_vcftools.imiss 
+awk '$5 > 0.3' missingness_vcftools.imiss 
+
+#[25405942@n09 ~]$ awk '$5 > 0.4' missingness_vcftools.imiss 
+#INDV	N_DATA	N_GENOTYPES_FILTERED	N_MISS	F_MISS
+#FB12	65744	  0	                    30278	  0.460544
+
+#load R to generate stats 
+module load app/R/4.3.2
+
+#don't need to enter R 
+awk 'NR>1 {print $5}' missingness_vcftools.imiss | Rscript -e 'x <- scan("stdin", quiet=TRUE); print(summary(x))'
+
+Missingness stats: 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.2365  0.2517  0.2639  0.2775  0.2897  0.4605 
+ 
+ #my samples start with the pop e.g. "FB12" so i extracted the first two characters and made a pop column
+ awk 'NR==1{print $0,"POP"} NR>1{pop=substr($1,1,2); print $0, pop}' missingness_vcftools.imiss > missingness_with_pop.imiss
+ 
+ head -n 92 missingness_with_pop.imiss
+ 
+#INDV	N_DATA	N_GENOTYPES_FILTERED	N_MISS	F_MISS POP
+#CC01	65744	0	17723	0.269576 CC
+#CC03	65744	0	18101	0.275326 CC
+
+#Run R script without entering R again
+module load app/R/4.3.2
+
+Rscript -e '
+dat <- read.table("~/ch2/03_angsd/HG/missingness_with_pop.imiss", header=TRUE);
+library(dplyr)
+dat %>%
+  group_by(POP) %>%
+  summarise(
+    N = n(),
+    mean_missing = mean(F_MISS),
+    median_missing = median(F_MISS),
+    min_missing = min(F_MISS),
+    max_missing = max(F_MISS),
+    sd_missing = sd(F_MISS)
+  ) %>%
+  print()
+'
+
+# A tibble: 5 × 7
+  POP       N mean_missing median_missing min_missing max_missing sd_missing
+  <chr> <int>        <dbl>          <dbl>       <dbl>       <dbl>      <dbl>
+1 CC       19        0.265          0.257       0.242       0.318     0.0191
+2 FB       16        0.306          0.302       0.245       0.461     0.0579
+3 KL       19        0.264          0.260       0.237       0.312     0.0203
+4 LB       18        0.302          0.294       0.250       0.382     0.0398
+5 PP       19        0.256          0.254       0.236       0.277     0.0102

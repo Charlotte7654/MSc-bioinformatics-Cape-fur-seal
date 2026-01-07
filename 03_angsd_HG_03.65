@@ -1,0 +1,37 @@
+#!/bin/bash
+#PBS -N 03_angsd_HG_03.65
+#PBS -l select=1:ncpus=8:mem=8GB
+#PBS -l walltime=8:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+module load app/angsd/0.940
+
+mkdir -p ~/ch2/03_angsd/HG/
+
+angsd \
+  -bam ~/ch2/00_info/bamlist_91_renamed \
+  -ref ~/msc/05_refmap/genome_updated/GCA_040869175.1_updated.fasta \
+  -out ~/ch2/03_angsd/HG/03_angsd_HG_03.65 \
+  -pest ~/ch2/03_angsd/sfs/03_angsd_SFS_91ind.saf.idx.ml \
+  -nThreads 8 \
+  -GL 1 \
+  -doGeno 10 \
+  -dopost 3 \
+  -SNP_pval 1e-4 \
+  -minInd 46 \
+  -minMaf 0.05 \
+  -minMapQ 20 \
+  -minQ 20 \
+  -geno_minDepth 4 \
+  -geno_maxDepth 20 \
+  -postCutoff 0.8 \
+  -doMajorMinor 1 \
+  -doMaf 1 \
+  -doCounts 1 \
+  -doDepth 1 \
+  -doPlink 2 \
+  -beagleProb 1 \
+  -doBcf 1 \
+  -dumpCounts 2
+

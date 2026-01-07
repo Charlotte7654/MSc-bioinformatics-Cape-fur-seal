@@ -1,0 +1,29 @@
+qsubi 
+module load app/plink/2.0
+
+#first needed to set unique IDs 
+plink2 --pfile ~/ch2/03_angsd/HG/03_angsd_HG_03.65 \
+--set-all-var-ids @:#:\$r:\$a \
+--make-pgen \
+--allow-extra-chr \
+--out ~/ch2/03_angsd/HG/fixed_ids
+
+#run plink for ld identification
+plink2 --pfile ~/ch2/03_angsd/HG/fixed_ids \
+--indep-pairwise 50 5 0.2 \
+--allow-extra-chr \
+--out ~/ch2/03_angsd/HG/ld_pruned_fixed_ids
+
+# pruned_snps.prune.in: A list of SNPs that are *not* in high LD and should be kept.
+# pruned_snps.prune.out: A list of SNPs that were flagged for removal due to high LD.
+
+wc -l ~/ch2/03_angsd/HG/ld_pruned_fixed_ids.prune.out 
+33203
+
+wc -l ~/ch2/03_angsd/HG/ld_pruned_fixed_ids.prune.in 
+65744
+
+#use basic calculator (bc)
+echo "65744 + 33203" | bc
+#98947 
+#all sites accounted for

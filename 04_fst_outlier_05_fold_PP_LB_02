@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -N 04_fst_outlier_05_fold_PP_LB_02
+#PBS -l select=1:ncpus=8:mem=8GB
+#PBS -l walltime=8:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+# Load ANGSD module
+module load app/angsd/0.940
+
+mkdir -p ~/ch2/03_angsd/fst/
+
+# Calculate population pairwise fst 
+  
+# PP vs LB
+realSFS fst index \
+  ~/ch2/03_angsd/sfs/03_angsd_saf_PP_02.saf.idx \
+  ~/ch2/03_angsd/sfs/03_angsd_saf_LB_02.saf.idx \
+  -sfs ~/ch2/03_angsd/sfs/PP_LB_02.ml \
+  -fold 1 \
+  -fstout ~/ch2/03_angsd/fst/PP_LB_02
+
+

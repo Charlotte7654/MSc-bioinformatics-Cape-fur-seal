@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -N 04_sfs_for_fst_PPvsFB_02_01_boot
+#PBS -l select=1:ncpus=8:mem=32GB
+#PBS -l walltime=744:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+# Load ANGSD module
+module load app/angsd/0.940
+
+mkdir -p ~/ch2/03_angsd/sfs/
+
+#calculate pairwise 2dsfs's
+
+realSFS \
+  ~/ch2/03_angsd/sfs/03_angsd_saf_PP_02.saf.idx \
+  ~/ch2/03_angsd/sfs/03_angsd_saf_FB_02.saf.idx \
+  -fold 1 -bootstrap 50 -resample_chr 1 -maxiter 50 -P 8 -tole 1e-6 \
+  > ~/ch2/03_angsd/sfs/PP_FB_02_boot.ml

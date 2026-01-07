@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#PBS -N 01_multiqc
+#PBS -l select=1:ncpus=4
+#PBS -l walltime=00:59:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+cd $PBS_O_WORKDIR
+module load app/multiqc/1.14
+
+# make output directory if it doesn’t exist
+mkdir -p ~/ch2/01_multiqc
+
+# run multiqc on the FastQC results
+multiqc ~/ch2/01_fastqc -o ~/ch2/01_multiqc

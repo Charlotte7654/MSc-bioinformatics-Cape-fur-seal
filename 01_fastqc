@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#PBS -N 01_fastqc
+#PBS -l select=1:ncpus=16
+#PBS -l walltime=2:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+cd $PBS_O_WORKDIR
+module load app/fastqc/0.11.5
+
+# make output directory if it doesn’t exist
+mkdir -p ~/ch2/01_fastqc
+
+for sample in $(cat ~/ch2/00_data/samplelist.txt)
+do
+    fastqc ~/ch2/00_samples/pstI_mspI/${sample}.[12].fq.gz -o ~/ch2/01_fastqc
+done

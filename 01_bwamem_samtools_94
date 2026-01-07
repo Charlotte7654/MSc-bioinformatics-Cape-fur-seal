@@ -1,0 +1,26 @@
+#!/bin/bash
+#PBS -N 01_bwamem_samtools_94 
+#PBS -l select=1:ncpus=30:mem=60GB
+#PBS -l walltime=64:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+cd $PBS_O_WORKDIR 
+
+module load app/bwa/0.7.13
+module load app/samtools/1.19.2
+
+# make output directory if it doesn’t exist
+mkdir -p ~/ch1/02_align/
+
+# choose thread counts
+THREADS=30
+
+for x in $(cat ~/ch2/00_data/samplelist.txt)
+do
+    bwa mem -t $THREADS ~/msc/05_refmap/genome_updated/agaz_db \
+        ~/ch2/00_samples/pstI_mspI/${x}.1.fq.gz \
+        ~/ch2/00_samples/pstI_mspI/${x}.2.fq.gz \
+    | samtools view -b -h - \
+    | samtools sort -@ $THREADS -m 2G -O BAM -o ~/ch1/02_align/${x}.bam -
+done
