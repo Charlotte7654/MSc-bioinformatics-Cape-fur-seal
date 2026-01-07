@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -N 05_fastsimcoal_parabootstrapSFS_1PopStab46
+#PBS -l select=1:ncpus=32:mem=32GB
+#PBS -l walltime=24:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+cd $PBS_O_WORKDIR
+
+cd ~/software/fastsimcoal/stable_gla_anc/1PopStab46
+~/software/fastsimcoal/stable_gla_anc/fsc28 -i 1PopStab46_boot.par -n100 -j -d -s0 -x –I -q -c32

@@ -1,0 +1,32 @@
+#!/bin/bash
+#PBS -N 05_fastsimcoal_param_est_bootstrap_1PopBot19_1
+#PBS -l select=1:ncpus=16:mem=16GB
+#PBS -l walltime=24:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+FOUNDATION=~/software/fastsimcoal/bottleneck
+BASE=~/software/fastsimcoal/bottleneck/1PopBot19
+BOOTBASE=$BASE/1PopBot19_boot
+
+for i in {1..25}
+do
+    BOOTDIR=$BOOTBASE/1PopBot19_boot_$i
+
+    echo "Processing $BOOTDIR"
+
+    # copy tpl and est
+    cp $FOUNDATION/1PopBot19.tpl $BOOTDIR/1PopBot19_boot.tpl
+    cp $FOUNDATION/1PopBot19.est $BOOTDIR/1PopBot19_boot.est
+
+    # go into boot directory
+    cd $BOOTDIR
+
+    # run Fastsimcoal
+    ~/software/fastsimcoal/bottleneck/fsc28 \
+        -t 1PopBot19_boot.tpl \
+        -e 1PopBot19_boot.est \
+        --initvalues $BASE/1PopBot19.pv \
+        -d -M -n100000 -L20 -z0.01 -y 3 -c16
+done
+

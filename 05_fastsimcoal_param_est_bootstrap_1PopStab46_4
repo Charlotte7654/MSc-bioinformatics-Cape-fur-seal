@@ -1,0 +1,31 @@
+#!/bin/bash
+#PBS -N 05_fastsimcoal_param_est_bootstrap_1PopStab46_4
+#PBS -l select=1:ncpus=16:mem=16GB
+#PBS -l walltime=24:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+FOUNDATION=~/software/fastsimcoal/stable_gla_anc
+BASE=~/software/fastsimcoal/stable_gla_anc/1PopStab46
+BOOTBASE=$BASE/1PopStab46_boot
+
+for i in {76..100}
+do
+    BOOTDIR=$BOOTBASE/1PopStab46_boot_$i
+
+    echo "Processing $BOOTDIR"
+
+    # copy tpl and est
+    cp $FOUNDATION/1PopStab46.tpl $BOOTDIR/1PopStab46_boot.tpl
+    cp $FOUNDATION/1PopStab46.est $BOOTDIR/1PopStab46_boot.est
+
+    # go into boot directory
+    cd $BOOTDIR
+
+    # run Fastsimcoal
+    ~/software/fastsimcoal/stable_gla_anc/fsc28 \
+        -t 1PopStab46_boot.tpl \
+        -e 1PopStab46_boot.est \
+        --initvalues $BASE/1PopStab46.pv \
+        -d -M -n100000 -L20 -z0.01 -y 3 -c16
+done

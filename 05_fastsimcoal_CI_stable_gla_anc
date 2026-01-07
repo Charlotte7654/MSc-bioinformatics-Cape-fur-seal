@@ -1,0 +1,67 @@
+qsubi 
+module load app/R/4.3.2
+R
+
+# Load data
+bootfile <- "~/software/fastsimcoal/stable_gla_anc/1PopStab46/1PopStab46_boot/all_bootstraps.tsv"
+bootdata <- read.table(bootfile, header=TRUE, sep="\t", stringsAsFactors=FALSE)
+
+# Convert first 7 columns to numeric
+params <- as.data.frame(lapply(bootdata[,1:7], as.numeric))
+
+# Summary function
+summary_ci <- function(x){
+  m <- mean(x, na.rm=TRUE)
+  ci <- quantile(x, probs=c(0.025,0.975), na.rm=TRUE)
+  return(c(mean=m, lower=ci[1], upper=ci[2]))
+}
+
+results <- t(apply(params, 2, summary_ci))
+print(results)
+               mean   lower.2.5%  upper.97.5%
+Ne     1.901989e+06 1.479764e+06 3.325546e+06
+Ngl    6.112004e+06 1.013355e+05 7.874708e+06
+Nac    1.819117e+05 1.010575e+05 5.125063e+05
+Tgc    1.511050e+03 5.950000e+00 6.987000e+03
+Tac    4.749996e+04 8.375000e+00 5.955562e+04
+Resold 3.833373e+00 3.115329e-02 5.156004e+00
+Resanc 9.921295e-01 1.294467e-02 5.035660e+00
+
+# Optionally save
+write.table(
+  results,
+  "~/software/fastsimcoal/stable_gla_anc/bootstrap_summary_stats.tsv",
+  sep = "\t",
+  quote = FALSE,
+  col.names = NA,   # keeps rownames in their own column like write.csv does
+  row.names = TRUE
+)
+
+library(ggplot2)
+library(reshape2)
+library(ragg)
+
+params <- as.data.frame(lapply(bootdata[,1:7], as.numeric))
+params_long <- melt(params)
+
+agg_png(
+  "~/software/fastsimcoal/stable_gla_anc/estimates_all_depths_hist_full_stable.png",
+  width = 2400,
+  height = 1170,
+  units = "px",
+  res = 300
+)
+
+ggplot(params_long, aes(x = value)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  facet_wrap(~variable, scales = "free", ncol = 4) +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+    axis.text.y = element_text(size = 8),
+    strip.text = element_text(size = 10, face = "bold"),
+    panel.spacing = unit(0.8, "lines")
+  ) +
+  labs(x = "Parameter value", y = "Count")
+
+dev.off()

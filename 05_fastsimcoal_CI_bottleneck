@@ -1,0 +1,72 @@
+qsubi
+module load app/R/4.3.2
+R
+
+# Load data
+bootfile <- "~/software/fastsimcoal/bottleneck/1PopBot19/1PopBot19_boot/all_bootstraps.tsv"
+bootdata <- read.table(bootfile, header=TRUE, sep="\t", stringsAsFactors=FALSE)
+
+# Define the Desired Plotting Order 
+plot_order <- c(
+  "Ne", "Nb", "Npb",
+  "Tbe", "Tbs", "Tdur",
+  "Resrec", "Resmid"
+)
+
+# Convert first 14 columns to numeric
+params <- as.data.frame(lapply(bootdata[,1:8], as.numeric))
+
+# Summary function
+summary_ci <- function(x){
+  m <- mean(x, na.rm=TRUE)
+  ci <- quantile(x, probs=c(0.025,0.975), na.rm=TRUE)
+  return(c(mean=m, lower=ci[1], upper=ci[2]))
+}
+
+results <- t(apply(params, 2, summary_ci))
+print(results)
+
+# Optionally save
+write.table(
+  results,
+  "~/software/fastsimcoal/bottleneck/bootstrap_summary_stats.tsv",
+  sep = "\t",
+  quote = FALSE,
+  col.names = NA,   # keeps rownames in their own column like write.csv does
+  row.names = TRUE
+)
+
+
+library(ggplot2)
+library(reshape2)
+library(ragg)
+
+params <- as.data.frame(lapply(bootdata[,1:14], as.numeric))
+params_long <- melt(params)
+
+params_long$variable <- factor(
+  params_long$variable,
+  levels = plot_order  # Uses the fully-specified, uppercase plot order
+)
+
+agg_png(
+  "~/software/fastsimcoal/bottleneck/estimates_all_depths_hist_full_bottleneck.png",
+  width = 2400,
+  height = 2133,
+  units = "px",
+  res = 300
+)
+
+ggplot(params_long, aes(x = value)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  facet_wrap(~variable, scales = "free") +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+    axis.text.y = element_text(size = 8),
+    strip.text = element_text(size = 10, face = "bold"),
+    panel.spacing = unit(0.8, "lines")
+  ) +
+  labs(x = "Parameter value", y = "Count")
+
+dev.off()
