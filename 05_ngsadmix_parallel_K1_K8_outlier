@@ -1,0 +1,46 @@
+#!/bin/bash
+#PBS -N 05_ngsadmix_parallel_K1_K8_outlier
+#PBS -l select=1:ncpus=16:mem=32GB
+#PBS -l walltime=23:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+# Load required modules
+module load app/angsd/0.940
+module load app/parallel/parallel
+
+# Base output directory
+basedir=~/ch2/05_ngsangsd
+mkdir -p $basedir
+
+# Input Beagle file
+beagle_file=~/ch2/04_outlierdetection/03.65_angsd_GL_outlier.beagle.gz
+
+# Function to run NGSadmix for a single K
+run_ngsadmix() {
+    K=$1
+    out=$basedir/03.65_angsd_GL_outlier_K${K}
+    log_file=${out}.log
+
+    # Skip if log file exists
+    if [[ -f $log_file ]]; then
+        echo "K=$K already done, skipping."
+        return
+    fi
+
+    echo "Running NGSadmix for K=$K ..."
+    NGSadmix -likes $beagle_file \
+             -K $K -P 4 \
+             -o $out \
+             -minMaf 0.05 \
+             -maxiter 5000 \
+             > ${log_file} 2>&1
+    echo "Finished K=$K"
+}
+
+export -f run_ngsadmix
+export basedir beagle_file
+
+# Run Ks 1 to 8 in parallel, 4 at a time
+parallel -j 4 run_ngsadmix ::: {1..8}
+

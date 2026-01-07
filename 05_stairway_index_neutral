@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -N 05_stairway_index_neutral
+#PBS -l select=1:ncpus=8:mem=8GB
+#PBS -l walltime=23:00:00
+#PBS -m e
+#PBS -M 25405942@sun.ac.za
+
+# Load ANGSD module
+module load app/angsd/0.940
+
+angsd sites index ~/ch2/05_stairway/neutral_and_monomorphic_sites.txt
