@@ -1,0 +1,48 @@
+qsubi 
+module load app/pcangsd/1.10 
+
+#Zip file if needed 
+#gzip -c ~/msc/99_angsd/ref_angsd_2.12_blanksnpsfiltered_blanksfiltered.beagle > ~/msc/99_angsd/ref_angsd_2.12_blanksnpsfiltered_blanksfiltered.beagle.gz
+
+#-p means that existing directory is not overwritten
+mkdir -p ~/ch2/05_pcangsd/
+
+pcangsd \
+-b ~/ch2/04_outlierdetection/03.65_angsd_GL_full.beagle.gz \
+-o ~/ch2/05_pcangsd/03.65_angsd_GL_full_covmat
+
+pcangsd \
+-b ~/ch2/04_outlierdetection/03.65_angsd_GL_neutral.beagle.gz \
+-o ~/ch2/05_pcangsd/03.65_angsd_GL_netural_covmat
+
+pcangsd \
+-b ~/ch2/04_outlierdetection/03.65_angsd_GL_outlier.beagle.gz \
+-o ~/ch2/05_pcangsd/03.65_angsd_GL_outlier_covmat
+
+module unload app/pcangsd/1.10 
+
+#You can read this file into Python using NumPy's genfromtxt function
+#python default didn't work, but python3 did
+#module avail python
+#module load python/3.12.0
+#which python
+#which python3
+
+#load python. default python did not work this time. 
+module load python/3.12.0
+python3.12
+
+#You can read this file into Python using NumPy's genfromtxt function:
+import numpy as np
+cov_matrix_full = np.genfromtxt('/home/25405942/ch2/05_pcangsd/03.65_angsd_GL_full_covmat.cov')
+cov_matrix_neutral = np.genfromtxt('/home/25405942/ch2/05_pcangsd/03.65_angsd_GL_neutral_covmat.cov')
+cov_matrix_outlier = np.genfromtxt('/home/25405942/ch2/05_pcangsd/03.65_angsd_GL_outlier_covmat.cov')
+
+#If you require the covariance matrix in .npy format, you can convert it using NumPy:
+#python3
+np.save('/home/25405942/ch2/05_pcangsd/03.65_angsd_GL_full_covmat.cov.npy', cov_matrix_full)
+np.save('/home/25405942/ch2/05_pcangsd/03.65_angsd_GL_neutral_covmat.cov.npy', cov_matrix_neutral)
+np.save('/home/25405942/ch2/05_pcangsd/03.65_angsd_GL_outlier_covmat.cov.npy', cov_matrix_outlier)
+
+#exit python 
+exit ()
